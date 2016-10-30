@@ -1,10 +1,12 @@
 const PIXI = require('pixi.js');
 const _ = require('lodash');
+const colorMatrixMod = require('./filters').colorMatrixMod;
+const filterInstru = require('./../../helpers/audio-helper').filterInstru;
 
 // Bark bands for each instrument
 const INSTRUMENT_BANDS = {
-    BASS_DRUM: {from: 0, to: 1, treshold: 1.2},
-    SNARE: {from: 1, to: 2, treshold: 1.1}
+    BASS_DRUM: { name: 'bd', from: 0, to: 1, treshold: 1.2},
+    SNARE: { name: 'snare', from: 1, to: 2, treshold: 1.1}
 };
 
 class Rumours {
@@ -14,7 +16,6 @@ class Rumours {
 
         this.bassElem = document.querySelector('.bass');
         this.snareElem = document.querySelector('.snare');
-
 
         this.renderer = PIXI.autoDetectRenderer(800, 600, {antialias: true});
         document.body.appendChild(this.renderer.view);
@@ -42,6 +43,7 @@ class Rumours {
         const features = this.analyzer.get(['loudness']);
 
         if (features) {
+
             const bassDrum = filterInstru(INSTRUMENT_BANDS.BASS_DRUM, features.loudness);
             this.bassElem.innerText = bassDrum;
 
@@ -63,30 +65,6 @@ class Rumours {
 
         this.renderer.render(this.stage);
     }
-}
-
-function colorMatrixMod(count) {
-    let matrix = [];
-    // red
-    matrix = matrix.concat([0, Math.sin(count) * 3, Math.cos(count), Math.cos(count) * 1.5, Math.sin(count / 3) * 2]);
-    // green
-    matrix = matrix.concat([Math.sin(count / 2), Math.sin(count / 4), 0, 0, 0]);
-    // blue
-    matrix = matrix.concat([0, 0, 0, 0, 0]);
-    // alpha
-    matrix = matrix.concat([0, 0, 0, 1, 0]);
-    return matrix;
-}
-
-function filterInstru(instrumentBands, loudness) {
-    if (!loudness.specific)
-        return 0;
-
-    const mean = _.mean(loudness.specific.slice(instrumentBands.from, instrumentBands.to + instrumentBands.from));
-    if (mean < instrumentBands.treshold) {
-        return 0;
-    }
-    return mean;
 }
 
 module.exports = Rumours;
