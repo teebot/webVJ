@@ -1,0 +1,26 @@
+{
+  "name": "webvj",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "./node_modules/.bin/standard",
+    "build": "./node_modules/.bin/webpack --progress --color",
+    "start": "./node_modules/.bin/webpack-dev-server --content-base dist/ --config ./webpack.config.js --inline --hot"
+  },
+  "author": "Thibaut Nguyen <thibaut@cozypixel.com> (http://cozypixel.com)",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "^6.18.0",
+    "babel-loader": "^6.2.7",
+    "babel-preset-es2017": "^6.16.0",
+    "standard": "^8.5.0",
+    "webpack": "^1.13.3",
+    "webpack-dev-server": "^1.16.2"
+  },
+  "dependencies": {
+    "lodash": "^4.16.4",
+    "three": "^0.82.1",
+    "meyda": "^3.1.1"
+  }
+}
