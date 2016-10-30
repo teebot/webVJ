@@ -1,25 +1,27 @@
 const PIXI = require('pixi.js');
 const _ = require('lodash');
 const colorMatrixMod = require('./filters').colorMatrixMod;
-const filterInstru = require('./../../helpers/audio-helper').filterInstru;
+const getInstrumentBeat = require('./../../helpers/audio-helper').getInstrumentBeat;
 
 // Bark bands for each instrument
 const INSTRUMENT_BANDS = {
-    BASS_DRUM: { name: 'bd', from: 0, to: 1, treshold: 1.2},
-    SNARE: { name: 'snare', from: 1, to: 2, treshold: 1.1}
+    BASS_DRUM: {from: 0, to: 1, treshold: 1.2},
+    SNARE: {from: 1, to: 2, treshold: 1.1}
 };
 
 class Rumours {
+
     constructor(analyzer) {
         this.count = 0;
         this.analyzer = analyzer;
 
-        this.bassElem = document.querySelector('.bass');
-        this.snareElem = document.querySelector('.snare');
-
         this.renderer = PIXI.autoDetectRenderer(800, 600, {antialias: true});
         document.body.appendChild(this.renderer.view);
 
+        this.setup();
+    }
+
+    setup() {
         this.stage = new PIXI.Container();
         this.stage.interactive = true;
 
@@ -42,25 +44,18 @@ class Rumours {
         this.colorFilter.matrix = colorMatrixMod(this.count);
         const features = this.analyzer.get(['loudness']);
 
-        if (features) {
+        const beat = getInstrumentBeat(INSTRUMENT_BANDS, features);
+        if (beat.SNARE) {
+            this.stage.addChild(this.circle);
+        } else {
+            this.stage.removeChild(this.circle);
+        }
 
-            const bassDrum = filterInstru(INSTRUMENT_BANDS.BASS_DRUM, features.loudness);
-            this.bassElem.innerText = bassDrum;
-
-            const snare = filterInstru(INSTRUMENT_BANDS.SNARE, features.loudness);
-            this.snareElem.innerText = snare;
-            if (snare) {
-                this.stage.addChild(this.circle);
-            } else {
-                this.stage.removeChild(this.circle);
-            }
-
-            if (bassDrum) {
-                this.stage.addChild(this.boom);
-                this.stage.removeChild(this.circle);
-            } else {
-                this.stage.removeChild(this.boom);
-            }
+        if (beat.BASS_DRUM) {
+            this.stage.addChild(this.boom);
+            this.stage.removeChild(this.circle);
+        } else {
+            this.stage.removeChild(this.boom);
         }
 
         this.renderer.render(this.stage);

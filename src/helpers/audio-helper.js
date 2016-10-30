@@ -1,4 +1,17 @@
-module.exports.filterInstru = (instrumentBands, loudness) => {
+module.exports.getInstrumentBeat = (instruments, features) => {
+    let output = {};
+
+    if (!features || !features.loudness)
+        return output;
+
+    for (let instrument in instruments) {
+        output[instrument] = filterInstrument(instruments[instrument], features.loudness);
+        // displayDebugInfo(instrument, output[instrument]);
+    }
+    return output;
+};
+
+function filterInstrument(instrumentBands, loudness) {
     if (!loudness.specific)
         return 0;
 
@@ -7,4 +20,8 @@ module.exports.filterInstru = (instrumentBands, loudness) => {
         return 0;
     }
     return mean;
-};
+}
+
+function displayDebugInfo(instrument, output) {
+    console.info(instrument, output);
+}
