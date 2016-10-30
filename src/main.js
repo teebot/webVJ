@@ -1,6 +1,6 @@
 const Audio = require('./audio');
 const _ = require('lodash');
-const THREE = require('three');
+const PIXI = require('pixi.js');
 const bufferSize = 1024;
 const analyzer = new Audio(bufferSize);
 
@@ -24,24 +24,36 @@ const filter = (instrumentBands, loudness) => {
     return mean;
 };
 
-var renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
-var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 500);
-camera.position.set(0, 0, 100);
-camera.lookAt(new THREE.Vector3(0, 0, 0));
-var scene = new THREE.Scene();
-var material = new THREE.LineBasicMaterial({
-    color: 0x0000ff
-});
-var geometry = new THREE.Geometry();
-geometry.vertices.push(new THREE.Vector3(-10, 0, 0));
-geometry.vertices.push(new THREE.Vector3(0, 10, 0));
-geometry.vertices.push(new THREE.Vector3(10, 0, 0));
-var line = new THREE.Line(geometry, material);
+var renderer = PIXI.autoDetectRenderer(800, 600, { antialias: true });
+document.body.appendChild(renderer.view);
+var stage = new PIXI.Container();
 
+stage.interactive = true;
 
+var circle = new PIXI.Graphics();
+circle.beginFill(0xFFFFFF);
+circle.drawCircle(390, 300, 60);
+
+var boom = PIXI.Sprite.fromImage('images/neons.jpg');
+boom.width = renderer.width;
+boom.height = renderer.height;
+
+var blurFilter1 = new PIXI.filters.BlurFilter();
+var colorFilter = new PIXI.filters.ColorMatrixFilter();
+boom.filters = [blurFilter1, colorFilter];
+circle.filters = [blurFilter1];
+
+var count = 0;
 function render(time) {
+    count += 0.1;
+    var matrix = colorFilter.matrix;
+
+    matrix[1] = Math.sin(count) * 3;
+    matrix[2] = Math.cos(count);
+    matrix[3] = Math.cos(count) * 1.5;
+    matrix[4] = Math.sin(count / 3) * 2;
+    matrix[5] = Math.sin(count / 2);
+    matrix[6] = Math.sin(count / 4);
 
     let features = analyzer.get(['loudness']);
 
@@ -52,14 +64,21 @@ function render(time) {
         let snare = filter(INSTRUMENT_BANDS.SNARE, features.loudness);
         snareElem.innerText = snare;
         if (snare) {
-            scene.add(line);
+            stage.addChild(circle);
         } else {
-            scene.remove(line);
+            stage.removeChild(circle);
+        }
+
+        if (bassDrum) {
+            stage.addChild(boom);
+            stage.removeChild(circle);
+        } else {
+            stage.removeChild(boom);
         }
     }
 
     requestAnimationFrame(render);
-    renderer.render(scene, camera);
+    renderer.render(stage);
 }
 
 render();
