@@ -1,7 +1,7 @@
 const PIXI = require('pixi.js');
-const _ = require('lodash');
 const colorMatrixMod = require('./filters').colorMatrixMod;
 const getInstrumentBeat = require('./../../helpers/audio-helper').getInstrumentBeat;
+const BaseScene = require('./../../base-scene');
 
 // Bark bands for each instrument
 const INSTRUMENT_BANDS = {
@@ -9,22 +9,10 @@ const INSTRUMENT_BANDS = {
     SNARE: {from: 1, to: 2, treshold: 1.1}
 };
 
-class Rumours {
-
-    constructor(analyzer) {
-        this.count = 0;
-        this.analyzer = analyzer;
-
-        this.renderer = PIXI.autoDetectRenderer(800, 600, {antialias: true});
-        document.body.appendChild(this.renderer.view);
-
-        this.setup();
-    }
+class Rumours extends BaseScene {
 
     setup() {
-        this.stage = new PIXI.Container();
-        this.stage.interactive = true;
-
+        this.count = 0;
         this.circle = new PIXI.Graphics();
         this.circle.beginFill(0xFFFFFF);
         this.circle.drawCircle(390, 300, 60);
