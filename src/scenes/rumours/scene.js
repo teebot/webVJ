@@ -1,5 +1,5 @@
 const PIXI = require('pixi.js');
-const colorMatrixMod = require('./filters').colorMatrixMod;
+const ColorMatrixMod = require('./filters').ColorMatrixMod;
 const getInstrumentBeat = require('./../../helpers/audio-helper').getInstrumentBeat;
 const BaseScene = require('./../../base-scene');
 
@@ -12,7 +12,8 @@ const INSTRUMENT_BANDS = {
 class Rumours extends BaseScene {
 
     setup() {
-        this.count = 0;
+        this.colorMatrixMod = new ColorMatrixMod();
+
         this.circle = new PIXI.Graphics();
         this.circle.beginFill(0xFFFFFF);
         this.circle.drawCircle(390, 300, 60);
@@ -28,8 +29,7 @@ class Rumours extends BaseScene {
     }
 
     render() {
-        this.count += 0.1;
-        this.colorFilter.matrix = colorMatrixMod(this.count);
+        this.colorFilter.matrix = this.colorMatrixMod.next();
         const features = this.analyzer.get(['loudness']);
 
         const beat = getInstrumentBeat(INSTRUMENT_BANDS, features);
